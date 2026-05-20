@@ -151,25 +151,22 @@ const actualizarComprobante = async (req, res) => {
     await comprobante.update(datosActualizacion);
     console.log('✅ Comprobante actualizado:', datosActualizacion);
 
-    // Enviar email de notificación si se aprueba el pago
+    // Enviar email de notificación en segundo plano si se aprueba el pago para no bloquear el hilo de respuesta
     if (notificar_cliente === true && comprobante.cliente_email) {
-      try {
-        console.log('📧 Enviando email de confirmación y PIN al cliente:', comprobante.cliente_email);
-        
-        const resultadoEmail = await enviarEmailComprobanteVerificado({
-          cliente_nombre: comprobante.cliente_nombre,
-          cliente_email: comprobante.cliente_email,
-          mensaje_personalizado: mensaje_cliente,
-          referencia: comprobante.referencia,
-          monto: comprobante.monto_usd,
-          plan_solicitado: comprobante.plan_solicitado,
-          pin_entregado: pin_entregado || comprobante.pin_entregado || 'No generado'
-        });
-
-        console.log('📧 Resultado email notificación:', resultadoEmail);
-      } catch (emailError) {
-        console.error('❌ Error enviando notificación al cliente:', emailError);
-      }
+      console.log('📧 Iniciando envío de email en segundo plano para:', comprobante.cliente_email);
+      enviarEmailComprobanteVerificado({
+        cliente_nombre: comprobante.cliente_nombre,
+        cliente_email: comprobante.cliente_email,
+        mensaje_personalizado: mensaje_cliente,
+        referencia: comprobante.referencia,
+        monto: comprobante.monto_usd,
+        plan_solicitado: comprobante.plan_solicitado,
+        pin_entregado: pin_entregado || comprobante.pin_entregado || 'No generado'
+      }).then(resultadoEmail => {
+        console.log('📧 Resultado email notificación (segundo plano):', resultadoEmail);
+      }).catch(emailError => {
+        console.error('❌ Error enviando notificación al cliente (segundo plano):', emailError);
+      });
     }
 
     res.json({

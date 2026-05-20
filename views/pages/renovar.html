@@ -472,13 +472,32 @@
         });
 
         // Verificar sesión y precargar
-        function chequearSesionCliente() {
+        async function chequearSesionCliente() {
             const clientToken = localStorage.getItem('customer_token');
             const clientDataRaw = localStorage.getItem('customer_data');
             const alertCont = document.getElementById('sessionAlertContainer');
             const detailsSec = document.getElementById('personalDetailsSection');
 
             if (clientToken && clientDataRaw) {
+                try {
+                    // Verificar si el cliente existe en el servidor para evitar sesiones fantasmas
+                    const profileResponse = await fetch('/api/customers/profile', {
+                        headers: {
+                            'Authorization': `Bearer ${clientToken}`
+                        }
+                    });
+
+                    if (profileResponse.status === 404) {
+                        console.warn("Sesión fantasma detectada (BD reiniciada). Limpiando localStorage...");
+                        localStorage.removeItem('customer_token');
+                        localStorage.removeItem('customer_data');
+                        window.location.reload();
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Error al validar perfil en servidor:", e);
+                }
+
                 const customer = JSON.parse(clientDataRaw);
                 
                 // Rellenar campos
@@ -520,7 +539,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            chequearSesionCliente();
+            await chequearSesionCliente();
             await cargarTasaBCV();
             checkUrlParams();
         });

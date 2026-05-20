@@ -293,6 +293,19 @@
         // Cargar PINs y Transacciones
         async function cargarDatosPortal() {
             try {
+                // Verificar si la sesión es válida y no una sesión fantasma por reseteo de base de datos
+                const profileResponse = await fetch('/api/customers/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (profileResponse.status === 404) {
+                    console.warn("Sesión fantasma detectada (BD reiniciada). Cerrando sesión...");
+                    cerrarSesion();
+                    return;
+                }
+
                 const response = await fetch('/api/customers/comprobantes', {
                     headers: {
                         'Authorization': `Bearer ${token}`
