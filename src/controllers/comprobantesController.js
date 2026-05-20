@@ -119,12 +119,16 @@ const actualizarComprobante = async (req, res) => {
       id, estado, observaciones, mensaje_cliente, notificar_cliente, pin_entregado
     });
 
-    const comprobante = await Comprobante.findByPk(id);
+    const comprobanteId = parseInt(id, 10);
+    const comprobante = await Comprobante.findByPk(comprobanteId);
     
     if (!comprobante) {
+      const todos = await Comprobante.findAll();
+      const idsExistentes = todos.map(c => c.id);
+      console.log(`❌ Comprobante no encontrado. Buscado: ${comprobanteId}. Disponibles: [${idsExistentes.join(', ')}]`);
       return res.status(404).json({
         success: false,
-        error: 'Comprobante no encontrado'
+        error: `Comprobante no encontrado (ID buscado: ${comprobanteId}). IDs registrados en el servidor: [${idsExistentes.join(', ')}]`
       });
     }
 
