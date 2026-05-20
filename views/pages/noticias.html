@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticias y Alertas - Latina WiFi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0072bc;
+            --secondary: #f37021;
+            --dark: #1e272e;
+            --light: #f5f6fa;
+            --danger-bg: #fff5f5;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            padding-bottom: 85px;
+        }
+        .header-section {
+            background: linear-gradient(135deg, var(--primary) 0%, #005a9c 100%);
+            color: white;
+            padding: 25px 0;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 15px rgba(0, 114, 188, 0.15);
+        }
+        /* Pills Filtro */
+        .filter-pills {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 5px;
+            scrollbar-width: none;
+        }
+        .filter-pills::-webkit-scrollbar {
+            display: none;
+        }
+        .filter-pill {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .filter-pill.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .filter-pill.active-danger {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        /* Noticia Card Mobile */
+        .noticia-card {
+            border: none;
+            border-radius: 16px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .noticia-card:active {
+            transform: scale(0.98);
+        }
+        .card-border-noticia {
+            border-left: 5px solid var(--primary);
+        }
+        .card-border-alerta {
+            border-left: 5px solid #dc3545;
+            background-color: var(--danger-bg);
+        }
+        .noticia-img {
+            height: 150px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .noticia-content {
+            padding: 15px;
+        }
+        .badge-noticia {
+            background-color: rgba(0, 114, 188, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        .badge-alerta {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        /* Menú inferior para móviles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background-color: white;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1030;
+            border-radius: 15px 15px 0 0;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            width: 20%;
+        }
+        .bottom-nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .bottom-nav-item.action-btn {
+            color: white;
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05e10 100%);
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            margin-top: -25px;
+            box-shadow: 0 5px 10px rgba(243, 112, 33, 0.3);
+            border: 3px solid white;
+        }
+        .bottom-nav-item.action-btn i {
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-section text-center mb-3">
+        <div class="container px-3">
+            <h1 class="h4 fw-bold mb-1"><i class="fas fa-newspaper me-2"></i>Noticias y Alertas</h1>
+            <p class="small mb-0 opacity-75">Novedades y estado del servicio WiFi en Camaguán</p>
+        </div>
+    </header>
+
+    <div class="container py-2">
+        <!-- Filtros -->
+        <div class="filter-pills mb-3">
+            <div class="filter-pill active" id="btnFiltroTodas" onclick="filtrar('todas')">Todas</div>
+            <div class="filter-pill" id="btnFiltroNoticias" onclick="filtrar('noticias')">Novedades</div>
+            <div class="filter-pill" id="btnFiltroAlertas" onclick="filtrar('alertas')">Alertas de Servicio</div>
+        </div>
+
+        <!-- Cargando -->
+        <div id="loadingNoticias" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-muted small">Buscando últimas novedades...</p>
+        </div>
+
+        <!-- Contenedor de Noticias -->
+        <div id="listaNoticias" class="row g-2">
+            <!-- Cargado mediante JS -->
+        </div>
+
+        <!-- Sin Noticias -->
+        <div id="sinNoticias" class="text-center py-5 d-none">
+            <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted fw-bold">Sin novedades recientes</h5>
+            <p class="text-muted small">El servicio está operando normalmente en toda la zona.</p>
+        </div>
+    </div>
+
+    <!-- Menú Inferior Móvil -->
+    <div class="bottom-nav">
+        <a href="/" class="bottom-nav-item">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="/soporte/renovar" class="bottom-nav-item action-btn">
+            <i class="fas fa-plus"></i>
+        </a>
+        <a href="/soporte" class="bottom-nav-item">
+            <i class="fas fa-headset"></i>
+            <span>Soporte</span>
+        </a>
+        <a href="/portal" class="bottom-nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span>Mi Cuenta</span>
+        </a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let todasLasNoticias = [];
+        let filtroActual = 'todas';
+
+        document.addEventListener('DOMContentLoaded', cargarNoticias);
+
+        async function cargarNoticias() {
+            const loading = document.getElementById('loadingNoticias');
+            const sinNoticias = document.getElementById('sinNoticias');
+            const lista = document.getElementById('listaNoticias');
+
+            try {
+                const response = await fetch('/api/noticias');
+                const result = await response.json();
+
+                if (result.success && result.data.length > 0) {
+                    todasLasNoticias = result.data;
+                    renderizarNoticias();
+                } else {
+                    sinNoticias.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error('Error al cargar noticias:', error);
+                sinNoticias.classList.remove('d-none');
+                sinNoticias.innerHTML = `
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning fw-bold">Error de conexión</h5>
+                    <p class="text-muted small">No pudimos conectar con el servidor. Revisa tu internet e intenta de nuevo.</p>
+                `;
+            } finally {
+                loading.classList.add('d-none');
+            }
+        }
+
+        function renderizarNoticias() {
+            const lista = document.getElementById('listaNoticias');
+            const sinNoticias = document.getElementById('sinNoticias');
+            lista.innerHTML = '';
+
+            let noticiasFiltradas = todasLasNoticias;
+            if (filtroActual === 'noticias') {
+                noticiasFiltradas = todasLasNoticias.filter(n => n.tipo === 'noticia' || !n.tipo);
+            } else if (filtroActual === 'alertas') {
+                noticiasFiltradas = todasLasNoticias.filter(n => n.tipo === 'alerta');
+            }
+
+            if (noticiasFiltradas.length === 0) {
+                sinNoticias.classList.remove('d-none');
+                return;
+            } else {
+                sinNoticias.classList.add('d-none');
+            }
+
+            lista.innerHTML = noticiasFiltradas.map(noticia => {
+                const esAlerta = noticia.tipo === 'alerta';
+                const cardClass = esAlerta ? 'card-border-alerta' : 'card-border-noticia';
+                const badgeClass = esAlerta ? 'badge-alerta' : 'badge-noticia';
+                const badgeText = esAlerta ? 'Alerta de Servicio' : 'Novedad';
+                const icon = esAlerta ? '<i class="fas fa-exclamation-triangle text-danger me-1"></i>' : '<i class="fas fa-info-circle text-primary me-1"></i>';
+
+                return `
+                    <div class="col-12">
+                        <div class="noticia-card ${cardClass}" onclick="location.href='/noticias/${noticia.id}'">
+                            ${noticia.imagen_url ? `
+                                <img src="${noticia.imagen_url}" class="noticia-img" alt="${noticia.titulo}">
+                            ` : ''}
+                            <div class="noticia-content">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="${badgeClass}">${icon} ${badgeText}</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                        <i class="far fa-calendar me-1"></i>${new Date(noticia.fecha_publicacion).toLocaleDateString()}
+                                    </small>
+                                </div>
+                                <h3 class="h6 fw-bold mb-2 text-dark">${noticia.titulo}</h3>
+                                <p class="small text-muted mb-2 text-truncate-2" style="font-size: 0.8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;">
+                                    ${noticia.contenido}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted" style="font-size: 0.7rem;">
+                                        <i class="far fa-user me-1"></i>Por ${noticia.autor}
+                                    </small>
+                                    <span class="text-primary fw-bold small" style="font-size: 0.8rem;">
+                                        Leer más <i class="fas fa-arrow-right ms-1"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filtrar(tipo) {
+            filtroActual = tipo;
+
+            // Restablecer estilos de los pills
+            document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active', 'active-danger'));
+
+            if (tipo === 'todas') {
+                document.getElementById('btnFiltroTodas').classList.add('active');
+            } else if (tipo === 'noticias') {
+                document.getElementById('btnFiltroNoticias').classList.add('active');
+            } else if (tipo === 'alertas') {
+                document.getElementById('btnFiltroAlertas').classList.add('active-danger');
+            }
+
+            renderizarNoticias();
+        }
+    </script>
+</body>
+</html>

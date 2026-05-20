@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticia - Latina WiFi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0072bc;
+            --secondary: #f37021;
+            --dark: #1e272e;
+            --light: #f5f6fa;
+            --danger-bg: #fff5f5;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            padding-bottom: 85px;
+        }
+        .header-section {
+            background: linear-gradient(135deg, var(--primary) 0%, #005a9c 100%);
+            color: white;
+            padding: 20px 0;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 15px rgba(0, 114, 188, 0.15);
+            position: relative;
+        }
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 20px;
+            color: white;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .back-btn:active {
+            opacity: 0.6;
+        }
+        .noticia-card {
+            border: none;
+            border-radius: 18px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .noticia-img {
+            max-height: 250px;
+            object-fit: cover;
+            width: 100%;
+        }
+        .noticia-body {
+            padding: 20px;
+        }
+        .badge-noticia {
+            background-color: rgba(0, 114, 188, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .badge-alerta {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .noticia-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--dark);
+        }
+        .noticia-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #4a5568;
+            white-space: pre-line;
+        }
+
+        /* Compartir */
+        .share-container {
+            background-color: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+        }
+        .share-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            margin: 0 8px;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+            border: none;
+        }
+        .share-btn:active {
+            transform: scale(0.9);
+        }
+        .share-ws { background-color: #25d366; }
+        .share-fb { background-color: #1877f2; }
+        .share-tw { background-color: #1da1f2; }
+
+        /* Navegación */
+        .nav-btn {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 15px;
+            background-color: white;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .nav-btn:active {
+            background-color: #f7fafc;
+        }
+        .nav-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Menú inferior para móviles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background-color: white;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1030;
+            border-radius: 15px 15px 0 0;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            width: 20%;
+        }
+        .bottom-nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .bottom-nav-item.action-btn {
+            color: white;
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05e10 100%);
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            margin-top: -25px;
+            box-shadow: 0 5px 10px rgba(243, 112, 33, 0.3);
+            border: 3px solid white;
+        }
+        .bottom-nav-item.action-btn i {
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-section text-center mb-3">
+        <a href="/noticias" class="back-btn">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        <div class="container px-3">
+            <span class="h6 fw-bold mb-0">Detalle de Publicación</span>
+        </div>
+    </header>
+
+    <div class="container py-2">
+        <!-- Cargando -->
+        <div id="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2 text-muted small">Cargando contenido...</p>
+        </div>
+
+        <!-- Alerta de Error -->
+        <div id="errorBox" class="alert alert-danger text-center rounded-4 p-4 d-none">
+            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+            <h5 class="fw-bold">Publicación no encontrada</h5>
+            <p class="small text-muted mb-3">El enlace es incorrecto o la publicación ha sido eliminada.</p>
+            <a href="/noticias" class="btn btn-danger btn-sm rounded-pill px-4">Ir a Noticias</a>
+        </div>
+
+        <!-- Contenido principal -->
+        <div id="content" class="d-none">
+            <article class="noticia-card">
+                <div id="imageContainer">
+                    <!-- Imagen de la noticia -->
+                </div>
+                
+                <div class="noticia-body">
+                    <div class="mb-2">
+                        <span id="badge" class="badge-noticia">Novedad</span>
+                    </div>
+
+                    <h1 class="noticia-title mb-3" id="title">Título de la noticia</h1>
+                    
+                    <div class="d-flex align-items-center mb-4 text-muted" style="font-size: 0.8rem; gap: 15px;">
+                        <span><i class="far fa-calendar me-1"></i><span id="date">--/--/----</span></span>
+                        <span><i class="far fa-user me-1"></i>Por <span id="author">--</span></span>
+                    </div>
+
+                    <hr class="text-muted opacity-25 mb-4">
+
+                    <p class="noticia-text" id="bodyText">
+                        Contenido...
+                    </p>
+                </div>
+            </article>
+
+            <!-- Compartir -->
+            <div class="share-container text-center">
+                <span class="small fw-bold text-muted d-block mb-3">¿COMPARTIR ESTA INFORMACIÓN?</span>
+                <div class="d-flex justify-content-center">
+                    <button class="share-btn share-ws" onclick="compartirWhatsApp()" title="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                    <button class="share-btn share-fb" onclick="compartirFacebook()" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </button>
+                    <button class="share-btn share-tw" onclick="compartirTwitter()" title="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <div class="row g-2 mb-4">
+                <div class="col-6">
+                    <a id="btnPrev" class="nav-btn disabled">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a id="btnNext" class="nav-btn disabled">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú Inferior Móvil -->
+    <div class="bottom-nav">
+        <a href="/" class="bottom-nav-item">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="/soporte/renovar" class="bottom-nav-item action-btn">
+            <i class="fas fa-plus"></i>
+        </a>
+        <a href="/soporte" class="bottom-nav-item">
+            <i class="fas fa-headset"></i>
+            <span>Soporte</span>
+        </a>
+        <a href="/portal" class="bottom-nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span>Mi Cuenta</span>
+        </a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let noticiaActual = null;
+        let noticiaId = null;
+
+        // Extraer id de la URL
+        function obtenerIdUrl() {
+            const path = window.location.pathname;
+            const match = path.match(/\/noticias\/(\d+)/);
+            return match ? parseInt(match[1]) : null;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            noticiaId = obtenerIdUrl();
+            if (!noticiaId) {
+                mostrarError();
+                return;
+            }
+            await cargarNoticia();
+        });
+
+        function mostrarError() {
+            document.getElementById('loading').classList.add('d-none');
+            document.getElementById('errorBox').classList.remove('d-none');
+            document.getElementById('content').classList.add('d-none');
+        }
+
+        async function cargarNoticia() {
+            try {
+                // Cargar noticia por ID
+                const res = await fetch(`/api/noticias/${noticiaId}`);
+                const result = await res.json();
+
+                if (!result.success || !result.data) {
+                    mostrarError();
+                    return;
+                }
+
+                noticiaActual = result.data;
+                document.title = `${noticiaActual.titulo} - Latina WiFi`;
+
+                // Renderizar datos
+                document.getElementById('title').textContent = noticiaActual.titulo;
+                document.getElementById('date').textContent = new Date(noticiaActual.fecha_publicacion).toLocaleDateString();
+                document.getElementById('author').textContent = noticiaActual.autor || 'Administrador';
+                document.getElementById('bodyText').textContent = noticiaActual.contenido;
+
+                // Renderizar Badge según Tipo
+                const isAlerta = noticiaActual.tipo === 'alerta';
+                const badge = document.getElementById('badge');
+                if (isAlerta) {
+                    badge.className = 'badge-alerta';
+                    badge.innerHTML = '<i class="fas fa-exclamation-triangle text-danger me-1"></i> Alerta de Servicio';
+                } else {
+                    badge.className = 'badge-noticia';
+                    badge.innerHTML = '<i class="fas fa-info-circle text-primary me-1"></i> Novedad';
+                }
+
+                // Renderizar Imagen
+                const imgContainer = document.getElementById('imageContainer');
+                if (noticiaActual.imagen_url) {
+                    imgContainer.innerHTML = `<img src="${noticiaActual.imagen_url}" class="noticia-img" alt="${noticiaActual.titulo}">`;
+                } else {
+                    imgContainer.innerHTML = '';
+                }
+
+                // Cargar adyacentes para paginación
+                await cargarPaginacion();
+
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('content').classList.remove('d-none');
+            } catch (err) {
+                console.error("Error al cargar la noticia:", err);
+                mostrarError();
+            }
+        }
+
+        async function cargarPaginacion() {
+            try {
+                const res = await fetch('/api/noticias');
+                const result = await res.json();
+
+                if (result.success && result.data.length > 0) {
+                    const idx = result.data.findIndex(n => n.id === noticiaId);
+                    
+                    if (idx !== -1) {
+                        const btnPrev = document.getElementById('btnPrev');
+                        const btnNext = document.getElementById('btnNext');
+
+                        // En orden DESC, la siguiente noticia más reciente es la del índice anterior (idx - 1)
+                        if (idx > 0) {
+                            btnPrev.href = `/noticias/${result.data[idx - 1].id}`;
+                            btnPrev.classList.remove('disabled');
+                        } else {
+                            btnPrev.classList.add('disabled');
+                        }
+
+                        // La noticia anterior más antigua es la del índice posterior (idx + 1)
+                        if (idx < result.data.length - 1) {
+                            btnNext.href = `/noticias/${result.data[idx + 1].id}`;
+                            btnNext.classList.remove('disabled');
+                        } else {
+                            btnNext.classList.add('disabled');
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("No se pudo cargar la paginación:", err);
+            }
+        }
+
+        // Compartir
+        function compartirWhatsApp() {
+            if (!noticiaActual) return;
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(`📢 *${noticiaActual.titulo}*\n\n${noticiaActual.contenido.substring(0, 100)}...\n\nLee la nota completa aquí:\n`);
+            window.open(`https://wa.me/?text=${text}${url}`, '_blank');
+        }
+
+        function compartirFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        function compartirTwitter() {
+            if (!noticiaActual) return;
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(`📢 ${noticiaActual.titulo} (vía Latina WiFi)`);
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+        }
+    </script>
+</body>
+</html>

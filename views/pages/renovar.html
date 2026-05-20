@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportar Pago Móvil - Latina WiFi</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0072bc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Latina WiFi">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0072bc;
+            --secondary: #f37021;
+            --dark: #1e272e;
+            --light: #f5f6fa;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            padding-bottom: 80px;
+        }
+        .header-section {
+            background: linear-gradient(135deg, var(--primary) 0%, #005a9c 100%);
+            color: white;
+            padding: 25px 0;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 15px rgba(0, 114, 188, 0.15);
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #fff;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--primary);
+            background-color: #f0f7fc;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+        .bcv-alert {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--primary);
+            color: #004d80;
+            border-radius: 0 8px 8px 0;
+        }
+        .card-details {
+            border: none;
+            border-radius: 16px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        /* Menú inferior para móviles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background-color: white;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1030;
+            border-radius: 15px 15px 0 0;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            width: 25%;
+        }
+        .bottom-nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .bottom-nav-item.action-btn {
+            color: white;
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05e10 100%);
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            margin-top: -25px;
+            box-shadow: 0 5px 10px rgba(243, 112, 33, 0.3);
+            border: 3px solid white;
+        }
+        .bottom-nav-item.action-btn i {
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+        .bottom-nav-item.action-btn span {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-section text-center mb-4">
+        <div class="container px-3">
+            <h1 class="h4 fw-bold mb-1"><i class="fas fa-wallet me-2"></i>Reportar Pago</h1>
+            <p class="small mb-0 opacity-75">Sube tu comprobante de Pago Móvil o Transferencia</p>
+        </div>
+    </header>
+
+    <div class="container py-2">
+        <!-- Tasa BCV Alert -->
+        <div class="alert bcv-alert p-3 mb-3 d-flex justify-content-between align-items-center">
+            <div class="small">
+                <i class="fas fa-info-circle me-1"></i> Tasa de cambio BCV del día:
+            </div>
+            <div class="fw-bold" id="tasaBcvText">Cargando...</div>
+        </div>
+
+        <!-- Instrucciones Pago Movil -->
+        <div class="card card-details p-3 mb-3">
+            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-university me-1"></i>Datos de Pago Móvil Latina</h6>
+            <ul class="list-unstyled mb-0 small">
+                <li>• Banco: <strong>Banesco (0134)</strong></li>
+                <li>• Teléfono: <strong>0414-5907568</strong></li>
+                <li>• Cédula: <strong>V-12984532</strong></li>
+            </ul>
+        </div>
+
+        <!-- Formulario -->
+        <div class="card card-details p-3">
+            <form id="pagoForm" enctype="multipart/form-data">
+                <!-- Alerta/Info de Sesión -->
+                <div id="sessionAlertContainer"></div>
+                
+                <div class="row g-3">
+                    <!-- Datos Personales Ocultables -->
+                    <div class="col-12" id="personalDetailsSection">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="nombre" class="form-label required-field">Nombre y Apellido del cliente</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required placeholder="Ej: Juan Pérez">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="cedula" class="form-label required-field">Cédula de Identidad</label>
+                                <input type="text" class="form-control" id="cedula" name="cedula" required placeholder="Ej: V-12345678">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="telefono" class="form-label required-field">Teléfono de Contacto</label>
+                                <input type="tel" class="form-control" id="telefono" name="telefono" required placeholder="Ej: 0412-1234567">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="email" class="form-label required-field">Correo Electrónico (Para recibir el PIN)</label>
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="Ej: correo@ejemplo.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Servicio -->
+                    <input type="hidden" id="zona_wifi" name="zona_wifi" value="General">
+
+                    <div class="col-12">
+                        <label for="plan_solicitado" class="form-label required-field">Plan a Adquirir</label>
+                        <select class="form-select" id="plan_solicitado" name="plan_solicitado" required>
+                            <option value="" data-usd="0">Seleccione Plan...</option>
+                            <option value="1 Hora ($0.50)" data-usd="0.50">Plan 1 Hora ($0.50)</option>
+                            <option value="24 Horas ($1.50)" data-usd="1.50">Plan 1 Día ($1.50)</option>
+                            <option value="7 Días ($5.00)" data-usd="5.00">Plan 7 Días ($5.00)</option>
+                            <option value="30 Días ($15.00)" data-usd="15.00">Plan 30 Días ($15.00)</option>
+                        </select>
+                    </div>
+
+                    <!-- Calculadora dinámica en Bolívares -->
+                    <div class="col-12 bg-light p-3 rounded-3" id="calcDiv" style="display:none;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small text-muted">Monto en Dólares:</span>
+                            <strong id="calcUsdText">$0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="small text-muted">Total a transferir en Bs:</span>
+                            <strong class="text-secondary h5 mb-0" id="calcBsText">0.00 Bs</strong>
+                        </div>
+                        <!-- Campos ocultos para enviar montos y tasa -->
+                        <input type="hidden" id="monto_usd" name="monto_usd" value="0">
+                        <input type="hidden" id="monto_bs" name="monto_bs" value="0">
+                        <input type="hidden" id="tasa_bcv" name="tasa_bcv" value="0">
+                    </div>
+
+                    <!-- Datos Transacción -->
+                    <div class="col-12">
+                        <label for="banco_emisor" class="form-label required-field">Banco Emisor (Desde dónde pagó)</label>
+                        <input type="text" class="form-control" id="banco_emisor" name="banco_emisor" required placeholder="Ej: Banco de Venezuela">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="banco_receptor" class="form-label required-field">Banco Receptor (Hacia cuál pagó)</label>
+                        <input type="text" class="form-control" id="banco_receptor" name="banco_receptor" required placeholder="Ej: Banesco">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="referencia" class="form-label required-field">Número de Referencia (Últimos 6 u 8 dígitos)</label>
+                        <input type="text" class="form-control" id="referencia" name="referencia" required placeholder="Ej: 123456">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="fecha_pago" class="form-label required-field">Fecha del Pago</label>
+                        <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
+                    </div>
+
+                    <!-- Carga de Captura -->
+                    <div class="col-12">
+                        <label class="form-label required-field">Captura del Pago</label>
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-camera fa-2x text-muted mb-2"></i>
+                            <div class="small fw-bold">Presiona para cargar captura</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">JPG, PNG o PDF (Máx. 5MB)</div>
+                            <input type="file" id="comprobante" name="comprobante" accept=".jpg,.jpeg,.png,.pdf" hidden required>
+                        </div>
+                        <div id="fileName" class="mt-2 text-success small fw-bold"></div>
+                        <div class="text-center mt-2" id="previewContainer" style="display:none;">
+                            <div id="previewContent"></div>
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2 py-1" onclick="clearFile()">
+                                <i class="fas fa-trash me-1"></i>Remover
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="col-12">
+                        <label for="observaciones" class="form-label">Observaciones Adicionales</label>
+                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2" placeholder="Cualquier información extra..."></textarea>
+                    </div>
+
+                    <!-- Botón de Envío -->
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold rounded-3">
+                            <i class="fas fa-paper-plane me-2"></i>REPORTAR PAGO
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="alertContainer" class="mt-3"></div>
+        </div>
+    </div>
+
+    <!-- Menú Inferior Móvil -->
+    <div class="bottom-nav">
+        <a href="/" class="bottom-nav-item">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="/soporte/renovar" class="bottom-nav-item action-btn active">
+            <i class="fas fa-plus"></i>
+        </a>
+        <a href="/soporte" class="bottom-nav-item">
+            <i class="fas fa-headset"></i>
+            <span>Soporte</span>
+        </a>
+        <a href="/portal" class="bottom-nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span>Mi Cuenta</span>
+        </a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let tasaBcv = 45.00;
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('comprobante');
+        const fileName = document.getElementById('fileName');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewContent = document.getElementById('previewContent');
+        const form = document.getElementById('pagoForm');
+        const alertContainer = document.getElementById('alertContainer');
+        const planSelect = document.getElementById('plan_solicitado');
+        const calcDiv = document.getElementById('calcDiv');
+        const calcUsdText = document.getElementById('calcUsdText');
+        const calcBsText = document.getElementById('calcBsText');
+
+        // Configurar fecha actual por defecto
+        document.getElementById('fecha_pago').valueAsDate = new Date();
+
+        // Obtener tasa BCV
+        async function cargarTasaBCV() {
+            try {
+                const response = await fetch('/api/config/bcv');
+                const result = await response.json();
+                if (result.success) {
+                    tasaBcv = parseFloat(result.rate);
+                }
+            } catch (e) {
+                console.error("Error cargando tasa BCV:", e);
+            }
+            document.getElementById('tasaBcvText').textContent = `${tasaBcv.toFixed(2)} Bs/$`;
+            actualizarPreciosPlan();
+        }
+
+        // Detectar query params (por si vienen redireccionados del index)
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const plan = urlParams.get('plan');
+            if (plan) {
+                // Seleccionar el plan en el select
+                for (let option of planSelect.options) {
+                    if (option.value.includes(plan)) {
+                        planSelect.value = option.value;
+                        actualizarPreciosPlan();
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Actualizar la calculadora de montos en Bs
+        function actualizarPreciosPlan() {
+            const selectedOption = planSelect.options[planSelect.selectedIndex];
+            const usdVal = parseFloat(selectedOption.getAttribute('data-usd') || 0);
+            
+            if (usdVal > 0) {
+                calcDiv.style.display = 'block';
+                calcUsdText.textContent = `$${usdVal.toFixed(2)}`;
+                const bsVal = usdVal * tasaBcv;
+                calcBsText.textContent = `${bsVal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Bs`;
+                
+                // Rellenar campos ocultos para el submit
+                document.getElementById('monto_usd').value = usdVal;
+                document.getElementById('monto_bs').value = bsVal;
+                document.getElementById('tasa_bcv').value = tasaBcv;
+            } else {
+                calcDiv.style.display = 'none';
+            }
+        }
+
+        planSelect.addEventListener('change', actualizarPreciosPlan);
+
+        // Control de archivos
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', updateFilePreview);
+
+        function updateFilePreview() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                fileName.textContent = `Archivo: ${file.name}`;
+                previewContainer.style.display = 'block';
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContent.innerHTML = `<img src="${e.target.result}" class="preview-image">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewContent.innerHTML = `<i class="fas fa-file-pdf fa-3x text-danger mb-1"></i><div class="small">${file.name}</div>`;
+                }
+            }
+        }
+
+        function clearFile() {
+            fileInput.value = '';
+            fileName.textContent = '';
+            previewContainer.style.display = 'none';
+            previewContent.innerHTML = '';
+        }
+
+        // Alternar visualización de datos personales
+        function togglePersonalDetails(e) {
+            if (e) e.preventDefault();
+            const sec = document.getElementById('personalDetailsSection');
+            if (sec.style.display === 'none') {
+                sec.style.display = 'block';
+            } else {
+                sec.style.display = 'none';
+            }
+        }
+
+        // Enviar Formulario
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>PROCESANDO...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(form);
+            
+            // Encabezados con token opcional de cliente
+            const headers = {};
+            const clientToken = localStorage.getItem('customer_token');
+            if (clientToken) {
+                headers['Authorization'] = `Bearer ${clientToken}`;
+            }
+
+            try {
+                const response = await fetch('/api/comprobantes', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <strong>¡Reporte Exitoso!</strong> Hemos recibido tu pago. En breve verificaremos la referencia y te enviaremos el PIN de acceso WiFi a tu correo.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    form.reset();
+                    clearFile();
+                    calcDiv.style.display = 'none';
+                    document.getElementById('fecha_pago').valueAsDate = new Date();
+                    
+                    // Si está logueado, mantener los datos precargados restablecidos
+                    chequearSesionCliente();
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Error:</strong> ${result.error || 'No se pudo reportar el pago.'}
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <strong>Error:</strong> Sin conexión con el servidor.
+                    </div>
+                `;
+            } finally {
+                submitBtn.innerHTML = originalHTML;
+                submitBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('cedula').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
+        });
+
+        // Verificar sesión y precargar
+        function chequearSesionCliente() {
+            const clientToken = localStorage.getItem('customer_token');
+            const clientDataRaw = localStorage.getItem('customer_data');
+            const alertCont = document.getElementById('sessionAlertContainer');
+            const detailsSec = document.getElementById('personalDetailsSection');
+
+            if (clientToken && clientDataRaw) {
+                const customer = JSON.parse(clientDataRaw);
+                
+                // Rellenar campos
+                document.getElementById('nombre').value = customer.nombre || '';
+                document.getElementById('cedula').value = customer.cedula || '';
+                document.getElementById('telefono').value = customer.telefono || '';
+                document.getElementById('email').value = customer.email || '';
+                
+                if (customer.banco_emisor_defecto) {
+                    document.getElementById('banco_emisor').value = customer.banco_emisor_defecto;
+                }
+
+                // Ocultar sección de datos personales
+                detailsSec.style.display = 'none';
+
+                // Mostrar banner de bienvenida
+                alertCont.innerHTML = `
+                    <div class="alert alert-success d-flex align-items-center mb-3 rounded-3" style="font-size: 0.85rem;">
+                        <i class="fas fa-check-circle me-2 fs-5"></i>
+                        <div class="w-100 d-flex justify-content-between align-items-center">
+                            <span>Sesión activa: <strong>${customer.nombre}</strong>.</span>
+                            <a href="#" onclick="togglePersonalDetails(event)" class="fw-bold text-success text-decoration-none">
+                                <i class="fas fa-edit me-1"></i>Editar datos
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                detailsSec.style.display = 'block';
+                alertCont.innerHTML = `
+                    <div class="alert alert-info d-flex align-items-center mb-3 rounded-3" style="font-size: 0.85rem;">
+                        <i class="fas fa-info-circle me-2 fs-5 text-primary"></i>
+                        <div>
+                            ¿Quieres reportar más rápido? <a href="/login" class="fw-bold text-decoration-none" style="color: var(--primary);">Inicia Sesión</a> para autocompletar tus datos.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            chequearSesionCliente();
+            await cargarTasaBCV();
+            checkUrlParams();
+        });
+    </script>
+</body>
+</html>

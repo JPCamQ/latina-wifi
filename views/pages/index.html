@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latina WiFi Camaguán - Internet Prepago</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0072bc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Latina WiFi">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0072bc;
+            --secondary: #f37021;
+            --dark: #1e272e;
+            --light: #f5f6fa;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            padding-bottom: 70px; /* Espacio para el menú inferior móvil */
+        }
+        .navbar-brand img {
+            height: 38px;
+        }
+        .hero-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #005a9c 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            border: none;
+            box-shadow: 0 10px 20px rgba(0, 114, 188, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: rgba(243, 112, 33, 0.2);
+            border-radius: 50%;
+        }
+        .bcv-badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        .plan-card {
+            border: none;
+            border-radius: 18px;
+            background: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border-top: 5px solid var(--primary);
+        }
+        .plan-card.featured {
+            border-top-color: var(--secondary);
+        }
+        .plan-price-usd {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        .plan-price-bs {
+            font-size: 1rem;
+            color: #7f8c8d;
+        }
+        /* Menú inferior para móviles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background-color: white;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1030;
+            border-radius: 15px 15px 0 0;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            width: 25%;
+        }
+        .bottom-nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .bottom-nav-item.action-btn {
+            color: white;
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05e10 100%);
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            margin-top: -25px;
+            box-shadow: 0 5px 10px rgba(243, 112, 33, 0.3);
+            border: 3px solid white;
+        }
+        .bottom-nav-item.action-btn i {
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+        .bottom-nav-item.action-btn span {
+            display: none;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 30px;
+        }
+        /* Banner de Instalación PWA */
+        .install-banner {
+            background: linear-gradient(135deg, var(--primary) 0%, #005a9c 100%);
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 114, 188, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #btnInstallApp {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        #btnInstallApp:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-light bg-white shadow-sm sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/images/logo.png" alt="Latina WiFi Logo">
+                <span class="ms-2 fw-bold text-primary" style="font-size: 1.1rem;">Latina WiFi</span>
+            </a>
+            <div class="d-flex align-items-center">
+                <a href="/portal" id="portalBtn" class="btn btn-outline-primary btn-sm fw-bold me-2 px-3" style="border-radius: 10px;">
+                    <i class="fas fa-user-circle me-1"></i>Mi Cuenta
+                </a>
+                <span class="badge bg-success status-badge d-none d-md-inline-block">
+                    <i class="fas fa-circle-notch fa-spin me-1"></i>Red Online
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Banner de Instalación PWA (Oculto por defecto) -->
+    <div id="installBanner" class="container mt-3 d-none">
+        <div class="install-banner p-3">
+            <div class="d-flex align-items-center">
+                <img src="/images/logo.png" alt="Latina WiFi App Icon" style="width: 42px; height: 42px; border-radius: 10px; object-fit: contain; background: white; padding: 2px;" class="me-3">
+                <div>
+                    <h5 class="h6 fw-bold mb-1" style="font-size: 0.9rem;">Instala nuestra App</h5>
+                    <p class="small mb-0 opacity-75" style="font-size: 0.75rem;">Acceso rápido y notificaciones de red</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center" style="gap: 12px;">
+                <button id="btnInstallApp" class="btn btn-light btn-sm fw-bold px-3 py-2 rounded-3 text-primary" style="font-size: 0.8rem;">Instalar</button>
+                <button id="btnDismissInstall" class="btn btn-link text-white p-1" style="text-decoration: none;"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Hero Section -->
+        <div class="hero-card mb-4">
+            <h1 class="h3 fw-bold mb-1">¡Internet WiFi en Camaguán!</h1>
+            <p class="small mb-3">Conéctate al instante en el Casco Central y La Paraita.</p>
+            <div class="bcv-badge mb-2">
+                <i class="fas fa-exchange-alt me-2"></i>
+                <span>Tasa BCV: <strong id="tasaBCVText">Cargando...</strong></span>
+            </div>
+            <div class="mt-3">
+                <a href="/soporte/renovar" class="btn btn-warning fw-bold text-dark px-4 btn-sm">
+                    <i class="fas fa-wallet me-2"></i>Reportar Pago Movil
+                </a>
+            </div>
+        </div>
+
+        <!-- Planes WiFi -->
+        <div class="row mb-4">
+            <div class="col-12 mb-3">
+                <h2 class="h5 fw-bold text-primary"><i class="fas fa-tags me-2"></i>Planes y Vouchers Disponibles</h2>
+                <p class="text-muted small">Selecciona tu plan y reporta tu pago móvil para recibir tu PIN de acceso.</p>
+            </div>
+
+            <!-- Plan 1 Hora -->
+            <div class="col-6 mb-3">
+                <div class="card plan-card h-100 p-3">
+                    <h3 class="h6 fw-bold mb-1">Plan 1 Hora</h3>
+                    <div class="plan-price-usd">$0.50</div>
+                    <div class="plan-price-bs font-monospace mb-2" data-usd="0.50">Calcular...</div>
+                    <div class="text-muted small mb-3"><i class="fas fa-mobile-alt me-1"></i>1 Dispositivo</div>
+                    <a href="/soporte/renovar?plan=1+Hora" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 mt-auto">Comprar</a>
+                </div>
+            </div>
+
+            <!-- Plan 24 Horas -->
+            <div class="col-6 mb-3">
+                <div class="card plan-card featured h-100 p-3">
+                    <h3 class="h6 fw-bold mb-1 text-secondary">Plan 1 Día</h3>
+                    <div class="plan-price-usd">$1.50</div>
+                    <div class="plan-price-bs font-monospace mb-2" data-usd="1.50">Calcular...</div>
+                    <div class="text-muted small mb-3"><i class="fas fa-mobile-alt me-1"></i>1 Dispositivo</div>
+                    <a href="/soporte/renovar?plan=24+Horas" class="btn btn-primary btn-sm w-100 fw-bold py-2 mt-auto">Comprar</a>
+                </div>
+            </div>
+
+            <!-- Plan 7 Días -->
+            <div class="col-6 mb-3">
+                <div class="card plan-card h-100 p-3">
+                    <h3 class="h6 fw-bold mb-1">Plan 7 Días</h3>
+                    <div class="plan-price-usd">$5.00</div>
+                    <div class="plan-price-bs font-monospace mb-2" data-usd="5.00">Calcular...</div>
+                    <div class="text-muted small mb-3"><i class="fas fa-mobile-alt me-1"></i>Hasta 2 Disp.</div>
+                    <a href="/soporte/renovar?plan=7+Días" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 mt-auto">Comprar</a>
+                </div>
+            </div>
+
+            <!-- Plan 30 Días -->
+            <div class="col-6 mb-3">
+                <div class="card plan-card h-100 p-3">
+                    <h3 class="h6 fw-bold mb-1">Plan 30 Días</h3>
+                    <div class="plan-price-usd">$15.00</div>
+                    <div class="plan-price-bs font-monospace mb-2" data-usd="15.00">Calcular...</div>
+                    <div class="text-muted small mb-3"><i class="fas fa-mobile-alt me-1"></i>Hasta 3 Disp.</div>
+                    <a href="/soporte/renovar?plan=30+Días" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 mt-auto">Comprar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cobertura -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+            <h2 class="h5 fw-bold text-primary mb-2"><i class="fas fa-map-marker-alt me-2"></i>Mapa de Cobertura WiFi</h2>
+            <p class="text-muted small mb-3">El servicio está habilitado en las áreas marcadas (Casco Central, La Paraita y calles adyacentes de Camaguán).</p>
+            <div class="ratio ratio-16x9 border rounded-3 overflow-hidden shadow-sm">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15777.625345719918!2d-67.48834927599026!3d8.096350325492479!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8c04b86866166eb9%3A0x77c44e99f5be6cb3!2sCamagu%C3%A1n%202313%2C%20Gu%C3%A1rico!5e0!3m2!1ses-419!2sve!4v1716200000000!5m2!1ses-419!2sve" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+
+        <!-- Red Social / Contacto rapido -->
+        <div class="alert alert-success border-0 rounded-4 d-flex align-items-center mb-4">
+            <i class="fab fa-whatsapp fa-2x text-success me-3"></i>
+            <div>
+                <h6 class="fw-bold mb-0">¿Necesitas soporte inmediato?</h6>
+                <p class="small mb-0">Escríbenos por WhatsApp al <a href="https://wa.me/584243594340" target="_blank" class="fw-bold text-success">+58 424-359-4340</a></p>
+            </div>
+        </div>
+
+        <!-- Últimas Noticias / Estado de Red -->
+        <div class="mb-4">
+            <h2 class="h5 fw-bold text-primary mb-3"><i class="fas fa-newspaper me-2"></i>Novedades e Información</h2>
+            <div id="ultimasNoticias" class="row">
+                <!-- Se cargará dinámicamente -->
+                <div class="col-12 text-center py-3">
+                    <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                    <p class="text-muted small mt-2">Cargando noticias...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú Inferior Móvil -->
+    <div class="bottom-nav">
+        <a href="/" class="bottom-nav-item active">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="/soporte/renovar" class="bottom-nav-item action-btn">
+            <i class="fas fa-plus"></i>
+        </a>
+        <a href="/soporte" class="bottom-nav-item">
+            <i class="fas fa-headset"></i>
+            <span>Soporte</span>
+        </a>
+        <a href="/portal" class="bottom-nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span>Mi Cuenta</span>
+        </a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let tasaBcv = 45.00;
+
+        // Cargar Tasa BCV
+        async function cargarTasaBCV() {
+            try {
+                const response = await fetch('/api/config/bcv');
+                const result = await response.json();
+                if (result.success) {
+                    tasaBcv = parseFloat(result.rate);
+                    document.getElementById('tasaBCVText').textContent = `${tasaBcv.toFixed(2)} Bs/$`;
+                    calcularMontosBs();
+                } else {
+                    document.getElementById('tasaBCVText').textContent = "45.00 Bs/$ (Por defecto)";
+                    calcularMontosBs();
+                }
+            } catch (error) {
+                console.error("Error al cargar la tasa BCV:", error);
+                document.getElementById('tasaBCVText').textContent = "45.00 Bs/$ (Por defecto)";
+                calcularMontosBs();
+            }
+        }
+
+        // Calcular montos en bolívares en base a tasa
+        function calcularMontosBs() {
+            document.querySelectorAll('.plan-price-bs').forEach(element => {
+                const usdVal = parseFloat(element.getAttribute('data-usd'));
+                const bsVal = usdVal * tasaBcv;
+                element.textContent = `= ${bsVal.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Bs`;
+            });
+        }
+
+        // Cargar últimas noticias
+        async function cargarUltimasNoticias() {
+            try {
+                const response = await fetch('/api/noticias');
+                const result = await response.json();
+                const container = document.getElementById('ultimasNoticias');
+                
+                if (result.success && result.data.length > 0) {
+                    const ultimas = result.data.slice(0, 2);
+                    container.innerHTML = ultimas.map(noticia => `
+                        <div class="col-12 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 p-3">
+                                <h4 class="h6 fw-bold mb-1">${noticia.titulo}</h4>
+                                <p class="text-muted small mb-2">${noticia.contenido.substring(0, 80)}...</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted font-monospace" style="font-size: 0.75rem;">
+                                        ${new Date(noticia.fecha_publicacion).toLocaleDateString()}
+                                    </span>
+                                    <a href="/noticias/${noticia.id}" class="btn btn-link text-primary btn-sm p-0 text-decoration-none">Leer más</a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-2 text-muted small">
+                            No hay noticias de red activas en este momento.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("Error al cargar noticias:", error);
+                document.getElementById('ultimasNoticias').innerHTML = '<div class="col-12 text-center text-muted small">Error al conectar.</div>';
+            }
+        }
+
+        // Registro de Service Worker para PWA y Notificaciones Push
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => {
+                        console.log('Service Worker registrado con éxito en scope:', reg.scope);
+                        solicitarPermisoNotificaciones();
+                    })
+                    .catch(err => console.error('Error al registrar Service Worker:', err));
+            });
+        }
+
+        // Lógica del Banner de Instalación PWA
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+        const btnInstallApp = document.getElementById('btnInstallApp');
+        const btnDismissInstall = document.getElementById('btnDismissInstall');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Evitar que Chrome/Android muestren el mini-infobar por defecto
+            e.preventDefault();
+            // Guardar el evento para dispararlo cuando haga click en "Instalar"
+            deferredPrompt = e;
+            
+            // Si el usuario no ha cerrado/rechazado el banner anteriormente en esta máquina
+            if (localStorage.getItem('pwa_install_dismissed') !== 'true') {
+                installBanner.classList.remove('d-none');
+            }
+        });
+
+        btnInstallApp.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            // Mostrar prompt de instalación
+            deferredPrompt.prompt();
+            // Esperar la decisión del usuario
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Elección del usuario: ${outcome}`);
+            deferredPrompt = null;
+            installBanner.classList.add('d-none');
+        });
+
+        btnDismissInstall.addEventListener('click', () => {
+            installBanner.classList.add('d-none');
+            // Guardar en localStorage para no molestar en futuras visitas
+            localStorage.setItem('pwa_install_dismissed', 'true');
+        });
+
+        // Solicitud de Notificaciones Push
+        function solicitarPermisoNotificaciones() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    // Preguntar al usuario después de 4 segundos para no interrumpir de inmediato
+                    setTimeout(async () => {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                            console.log('Permiso para notificaciones concedido.');
+                            suscribirDispositivoAPush();
+                        }
+                    }, 4000);
+                } else if (Notification.permission === 'granted') {
+                    suscribirDispositivoAPush();
+                }
+            }
+        }
+
+        async function suscribirDispositivoAPush() {
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                console.log('Conectando al canal de notificaciones en tiempo real de Latina WiFi...');
+                
+                // Conectar al endpoint de Server-Sent Events (SSE)
+                const eventSource = new EventSource('/api/noticias/notifications/subscribe');
+                
+                eventSource.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log('Nueva notificación recibida:', data);
+                        
+                        // Mostrar la notificación nativa usando el Service Worker para que funcione en background
+                        const options = {
+                            body: data.contenido,
+                            icon: '/images/logo.png',
+                            badge: '/images/logo.png',
+                            vibrate: [100, 50, 100],
+                            data: {
+                                url: data.url || '/'
+                            }
+                        };
+                        
+                        reg.showNotification(data.titulo, options);
+                        
+                        // Si la página principal está abierta, recargar las noticias automáticamente para ver la novedad
+                        if (typeof cargarUltimasNoticias === 'function') {
+                            cargarUltimasNoticias();
+                        }
+                    } catch (e) {
+                        console.error('Error procesando evento de notificación:', e);
+                    }
+                };
+
+                eventSource.onerror = (err) => {
+                    console.warn('Conexión SSE perdida. Reconectando en segundo plano...', err);
+                };
+            } catch (err) {
+                console.warn('Error al configurar canal de notificaciones en tiempo real:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarTasaBCV();
+            cargarUltimasNoticias();
+        });
+    </script>
+</body>
+</html>

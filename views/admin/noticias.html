@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Noticias - Admin Latina TV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .noticia-card {
+            transition: transform 0.3s;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .noticia-card:hover {
+            transform: translateY(-2px);
+        }
+        .badge-activa { background: #28a745; }
+        .badge-inactiva { background: #6c757d; }
+        .preview-image {
+            max-width: 100px;
+            max-height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Admin -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="fas fa-tv me-2"></i>Latina TV - Panel Admin
+            </a>
+            <div class="d-flex">
+                <a href="/admin/dashboard" class="btn btn-outline-light btn-sm me-2">
+                    <i class="fas fa-chart-bar me-1"></i>Dashboard
+                </a>
+                <a href="/" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-home me-1"></i>Ir al Sitio
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2><i class="fas fa-newspaper me-2"></i>Gestión de Noticias</h2>
+                        <p class="text-muted mb-0">Crea y gestiona las noticias que ven tus clientes</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="abrirModalCrear()">
+                        <i class="fas fa-plus me-1"></i>Nueva Noticia
+                    </button>
+                </div>
+
+                <!-- Lista de Noticias -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Imagen</th>
+                                        <th>Título</th>
+                                        <th>Autor</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaNoticias">
+                                    <!-- Las noticias se cargarán aquí -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div id="loadingNoticias" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Cargando noticias...</p>
+                        </div>
+
+                        <div id="sinNoticias" class="text-center py-5 d-none">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay noticias creadas</h5>
+                            <p class="text-muted">Crea tu primera noticia para que aparezca aquí.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear/Editar Noticia -->
+    <div class="modal fade" id="modalNoticia" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNoticiaTitulo">Crear Nueva Noticia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNoticia" enctype="multipart/form-data">
+                        <input type="hidden" id="noticiaId">
+                        
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" required 
+                                   placeholder="Ingresa el título de la noticia">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contenido" class="form-label">Contenido *</label>
+                            <textarea class="form-control" id="contenido" name="contenido" rows="6" required
+                                      placeholder="Escribe el contenido completo de la noticia..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="autor" class="form-label">Autor</label>
+                                    <input type="text" class="form-control" id="autor" name="autor" 
+                                           placeholder="Nombre del autor" value="Administrador">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="estado" class="form-label">Estado</label>
+                                    <select class="form-select" id="estado" name="estado">
+                                            <option value="publicada">Publicada</option>
+                                            <option value="borrador">Borrador</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="tipo" class="form-label">Tipo</label>
+                                    <select class="form-select" id="tipo" name="tipo">
+                                            <option value="noticia">Noticia</option>
+                                            <option value="alerta">Alerta de Sistema / Caída</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="imagen" class="form-label">Imagen de la Noticia</label>
+                            <input type="file" class="form-control" id="imagen" name="imagen" 
+                                   accept="image/jpeg,image/jpg,image/png,image/gif">
+                            <div class="form-text">
+                                Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
+                            </div>
+                        </div>
+                        
+                        <div id="previewImagenContainer" class="mb-3 d-none">
+                            <label class="form-label">Vista Previa:</label>
+                            <div>
+                                <img id="previewImagen" src="" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarNoticia">Guardar Noticia</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript para gestión de noticias -->
+    <script>
+        let noticiasData = [];
+
+        // Cargar noticias al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarNoticias();
+            setupEventListeners();
+        });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Guardar noticia
+            document.getElementById('btnGuardarNoticia').addEventListener('click', guardarNoticia);
+            
+            // Vista previa de imagen
+            document.getElementById('imagen').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('previewImagen').src = e.target.result;
+                        document.getElementById('previewImagenContainer').classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Función para obtener token de autenticación
+        function getAuthToken() {
+            return localStorage.getItem('admin_token');
+        }
+
+        // Función para hacer peticiones autenticadas
+        async function fetchWithAuth(url, options = {}) {
+            const token = getAuthToken();
+            
+            if (!token) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            };
+            
+            const finalOptions = { ...defaultOptions, ...options };
+            
+            try {
+                const response = await fetch(url, finalOptions);
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_user');
+                    window.location.href = '/admin/login';
+                    return;
+                }
+                
+                return response;
+            } catch (error) {
+                console.error('Error en petición autenticada:', error);
+                throw error;
+            }
+        }
+
+        // Cargar lista de noticias
+        async function cargarNoticias() {
+            const loading = document.getElementById('loadingNoticias');
+            const tabla = document.getElementById('tablaNoticias');
+            const sinNoticias = document.getElementById('sinNoticias');
+            
+            loading.classList.remove('d-none');
+            tabla.innerHTML = '';
+            sinNoticias.classList.add('d-none');
+
+            try {
+                const response = await fetchWithAuth('/api/noticias/admin/todas');
+                const result = await response.json();
+                
+                if (result.success) {
+                    noticiasData = result.data;
+                    mostrarNoticias(noticiasData);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error cargando noticias:', error);
+                tabla.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error al cargar las noticias
+                        </td>
+                    </tr>
+                `;
+            } finally {
+                loading.classList.add('d-none');
+            }
+        }
+
+        // Mostrar noticias en la tabla
+        function mostrarNoticias(noticias) {
+            const tabla = document.getElementById('tablaNoticias');
+            const sinNoticias = document.getElementById('sinNoticias');
+            
+            if (noticias.length === 0) {
+                sinNoticias.classList.remove('d-none');
+                return;
+            }
+
+            tabla.innerHTML = noticias.map(noticia => `
+                <tr>
+                    <td>
+                        ${noticia.imagen_url ? 
+                            `<img src="${noticia.imagen_url}" class="preview-image" alt="Imagen noticia">` : 
+                            '<span class="text-muted">Sin imagen</span>'
+                        }
+                    </td>
+                    <td>
+                        <strong>${noticia.titulo}</strong>
+                        <br><small class="text-muted">${noticia.contenido.substring(0, 100)}${noticia.contenido.length > 100 ? '...' : ''}</small>
+                    </td>
+                    <td>${noticia.autor}</td>
+                    <td>
+                        <small>${new Date(noticia.fecha_publicacion).toLocaleDateString()}</small>
+                    </td>
+                    <td>
+                        <span class="badge ${noticia.estado === 'publicada' ? 'badge-activa' : 'badge-inactiva'}">
+                            ${noticia.estado === 'publicada' ? 'Publicada' : 'Borrador'} <!-- ✅ CAMBIADO -->
+                        </span>
+                        <div class="mt-1">
+                            <span class="badge ${noticia.tipo === 'alerta' ? 'bg-danger' : 'bg-info text-dark'}">
+                                ${noticia.tipo === 'alerta' ? 'Alerta' : 'Noticia'}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" onclick="editarNoticia(${noticia.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="eliminarNoticia(${noticia.id})" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Abrir modal para crear noticia
+        function abrirModalCrear() {
+            document.getElementById('modalNoticiaTitulo').textContent = 'Crear Nueva Noticia';
+            document.getElementById('formNoticia').reset();
+            document.getElementById('noticiaId').value = '';
+            document.getElementById('previewImagenContainer').classList.add('d-none');
+            document.getElementById('estado').value = 'publicada';
+            document.getElementById('tipo').value = 'noticia';
+            
+            new bootstrap.Modal(document.getElementById('modalNoticia')).show();
+        }
+
+        // Editar noticia
+        async function editarNoticia(id) {
+            try {
+                const response = await fetchWithAuth(`/api/noticias/${id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const noticia = result.data;
+                    
+                    document.getElementById('modalNoticiaTitulo').textContent = 'Editar Noticia';
+                    document.getElementById('noticiaId').value = noticia.id;
+                    document.getElementById('titulo').value = noticia.titulo;
+                    document.getElementById('contenido').value = noticia.contenido;
+                    document.getElementById('autor').value = noticia.autor;
+                    document.getElementById('estado').value = noticia.estado;
+                    document.getElementById('tipo').value = noticia.tipo || 'noticia';
+                    
+                    // Mostrar imagen actual si existe
+                    if (noticia.imagen_url) {
+                        document.getElementById('previewImagen').src = noticia.imagen_url;
+                        document.getElementById('previewImagenContainer').classList.remove('d-none');
+                    } else {
+                        document.getElementById('previewImagenContainer').classList.add('d-none');
+                    }
+                    
+                    new bootstrap.Modal(document.getElementById('modalNoticia')).show();
+                }
+            } catch (error) {
+                console.error('Error cargando noticia:', error);
+                alert('Error al cargar la noticia');
+            }
+        }
+
+        // Guardar noticia (crear o actualizar)
+        async function guardarNoticia() {
+            const form = document.getElementById('formNoticia');
+            const formData = new FormData(form);
+            const noticiaId = document.getElementById('noticiaId').value;
+            
+            const url = noticiaId ? `/api/noticias/${noticiaId}` : '/api/noticias';
+            const method = noticiaId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetchWithAuth(url, {
+                    method: method,
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalNoticia')).hide();
+                    alert(result.message);
+                    cargarNoticias();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error guardando noticia:', error);
+                alert('Error al guardar la noticia');
+            }
+        }
+
+        // Eliminar noticia
+        async function eliminarNoticia(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta noticia?')) {
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth(`/api/noticias/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message);
+                    cargarNoticias();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error eliminando noticia:', error);
+                alert('Error al eliminar la noticia');
+            }
+        }
+
+        // Hacer funciones globales para los botones
+        window.abrirModalCrear = abrirModalCrear;
+        window.editarNoticia = editarNoticia;
+        window.eliminarNoticia = eliminarNoticia;
+    </script>
+</body>
+</html>

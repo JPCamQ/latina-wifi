@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Latina WiFi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0072bc;
+            --secondary: #f37021;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+        }
+        .sidebar {
+            background-color: white;
+            min-height: 100vh;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+        }
+        .sidebar-brand {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .nav-link-custom {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .nav-link-custom:hover, .nav-link-custom.active {
+            color: var(--primary);
+            background-color: #f0f7fc;
+            border-left-color: var(--primary);
+        }
+        .nav-link-custom i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+        .header-admin {
+            background-color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .card-stat {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+        .card-stat:hover {
+            transform: translateY(-2px);
+        }
+        .img-comprobante-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0 sidebar d-none d-md-block">
+                <div class="sidebar-brand d-flex align-items-center">
+                    <img src="/images/logo.png" alt="Logo" height="30" class="me-2">
+                    <span>Latina WiFi</span>
+                </div>
+                <div class="nav flex-column mt-3">
+                    <a href="/admin/dashboard" class="nav-link-custom active">
+                        <i class="fas fa-wallet"></i> Pagos Recibidos
+                    </a>
+                    <a href="/admin/tickets" class="nav-link-custom">
+                        <i class="fas fa-headset"></i> Soporte / Reclamos
+                    </a>
+                    <a href="/admin/noticias" class="nav-link-custom">
+                        <i class="fas fa-newspaper"></i> Noticias de Red
+                    </a>
+                    <hr class="mx-3 my-2">
+                    <a href="#" class="nav-link-custom text-danger" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-md-9 col-lg-10 p-0">
+                <!-- Top Header -->
+                <header class="header-admin d-flex justify-content-between align-items-center">
+                    <h1 class="h4 fw-bold mb-0">Gestión de Pagos</h1>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-muted small" id="adminName">Admin</span>
+                        <button class="btn btn-outline-danger btn-sm d-md-none" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </header>
+
+                <div class="p-4">
+                    <!-- Tasa BCV & Estadísticas -->
+                    <div class="row g-4 mb-4">
+                        <!-- Tasa BCV Settings -->
+                        <div class="col-lg-4">
+                            <div class="card card-stat p-3 h-100 border-start border-4 border-warning">
+                                <h5 class="card-title text-muted small fw-bold text-uppercase">Tasa BCV del Día</h5>
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <input type="number" step="0.01" class="form-control fw-bold fs-4 text-primary" id="bcvRateInput" style="max-width: 150px;">
+                                    <button class="btn btn-primary fw-bold" onclick="guardarTasaBCV()"><i class="fas fa-save me-1"></i>Guardar</button>
+                                </div>
+                                <div class="small text-muted mt-2">Usada para calcular montos en Bs automáticamente.</div>
+                            </div>
+                        </div>
+
+                        <!-- Pagos Pendientes -->
+                        <div class="col-lg-4">
+                            <div class="card card-stat p-3 h-100 border-start border-4 border-primary">
+                                <h5 class="card-title text-muted small fw-bold text-uppercase">Pagos Pendientes</h5>
+                                <div class="h2 fw-bold text-primary mt-2" id="statPendientes">0</div>
+                                <div class="small text-muted">Transacciones por verificar en banco.</div>
+                            </div>
+                        </div>
+
+                        <!-- Pagos Aprobados -->
+                        <div class="col-lg-4">
+                            <div class="card card-stat p-3 h-100 border-start border-4 border-success">
+                                <h5 class="card-title text-muted small fw-bold text-uppercase">Pagos Aprobados</h5>
+                                <div class="h2 fw-bold text-success mt-2" id="statVerificados">0</div>
+                                <div class="small text-muted">PINs entregados y registrados.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Comprobantes -->
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-0">
+                            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold mb-0">Comprobantes Recibidos</h5>
+                                <button class="btn btn-light btn-sm" onclick="cargarComprobantes()"><i class="fas fa-sync me-1"></i>Actualizar</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Zona</th>
+                                            <th>Plan Solicitado</th>
+                                            <th>Monto (USD/Bs)</th>
+                                            <th>Banco / Referencia</th>
+                                            <th>Captura</th>
+                                            <th>Estado</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="comprobantesTableBody">
+                                        <!-- Cargado dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles y Aprobación -->
+    <div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-file-invoice-dollar me-2"></i>Verificar Pago WiFi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary border-bottom pb-2">Información del Cliente</h6>
+                            <p class="mb-1"><strong>Nombre:</strong> <span id="modalNombre"></span></p>
+                            <p class="mb-1"><strong>Cédula:</strong> <span id="modalCedula"></span></p>
+                            <p class="mb-1"><strong>Email:</strong> <span id="modalEmail"></span></p>
+                            <p class="mb-1"><strong>Teléfono:</strong> <span id="modalTelefono"></span></p>
+                            <p class="mb-1"><strong>Zona de Navegación:</strong> <span id="modalZona"></span></p>
+                            
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mt-4">Detalle de Transferencia</h6>
+                            <p class="mb-1"><strong>Plan:</strong> <span id="modalPlan" class="badge bg-primary"></span></p>
+                            <p class="mb-1"><strong>Monto Plan:</strong> <strong id="modalMontoUsd"></strong> ($) / <strong id="modalMontoBs"></strong> (Bs)</p>
+                            <p class="mb-1"><strong>Tasa BCV Aplicada:</strong> <span id="modalTasa"></span> Bs/$</p>
+                            <p class="mb-1"><strong>Banco Emisor:</strong> <span id="modalBancoEmisor"></span></p>
+                            <p class="mb-1"><strong>Banco Receptor:</strong> <span id="modalBancoReceptor"></span></p>
+                            <p class="mb-1"><strong>Referencia:</strong> <strong id="modalReferencia" class="text-secondary"></strong></p>
+                            <p class="mb-1"><strong>Fecha de Pago:</strong> <span id="modalFecha"></span></p>
+                            <p class="mb-1"><strong>Obs. Cliente:</strong> <em id="modalObservaciones"></em></p>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h6 class="fw-bold text-primary border-bottom pb-2">Captura Adjunta</h6>
+                            <a id="modalImgLink" href="" target="_blank">
+                                <img id="modalImg" src="" class="img-fluid rounded border shadow-sm" style="max-height: 280px; object-fit: contain;">
+                            </a>
+                        </div>
+
+                        <!-- Sección de Aprobación/PIN -->
+                        <div class="col-12 border-top pt-3 mt-3">
+                            <h6 class="fw-bold text-secondary mb-2"><i class="fas fa-key me-1"></i>Asignación de PIN de Acceso</h6>
+                            
+                            <div class="mb-3">
+                                <label for="modalPin" class="form-label fw-bold">PIN / Voucher WiFi (Mandatorio para aprobar)</label>
+                                <input type="text" class="form-control fw-bold font-monospace text-uppercase" id="modalPin" placeholder="Ingrese el PIN de navegación generado en MikroTik">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="modalMensajeCliente" class="form-label fw-bold">Mensaje opcional para el cliente (se envía por correo)</label>
+                                <textarea class="form-control" id="modalMensajeCliente" rows="2" placeholder="Ej: Tu PIN ya está habilitado en la red. ¡Gracias por tu compra!"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="modalObsInternas" class="form-label fw-bold">Notas internas del Administrador</label>
+                                <textarea class="form-control" id="modalObsInternas" rows="2" placeholder="Notas solo visibles para el panel de administración..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <button type="button" class="btn btn-danger fw-bold" onclick="procesarPago('rechazado')">
+                            <i class="fas fa-times-circle me-1"></i>Rechazar Pago
+                        </button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-success fw-bold" onclick="procesarPago('verificado')">
+                            <i class="fas fa-check-circle me-1"></i>Aprobar y Enviar PIN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentComprobantes = [];
+        let activeComprobanteId = null;
+
+        // Verificar Token
+        function checkAuth() {
+            const token = localStorage.getItem('admin_token');
+            const admin = localStorage.getItem('admin_user');
+            
+            if (!token) {
+                window.location.href = '/admin/login';
+                return;
+            }
+            if (admin) {
+                const adminData = JSON.parse(admin);
+                document.getElementById('adminName').textContent = adminData.nombre_completo || adminData.username;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+            window.location.href = '/admin/login';
+        }
+
+        // Cargar Tasa BCV
+        async function cargarTasaBCV() {
+            try {
+                const response = await fetch('/api/config/bcv');
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('bcvRateInput').value = result.rate;
+                }
+            } catch (e) {
+                console.error("Error cargando tasa BCV:", e);
+            }
+        }
+
+        // Guardar Tasa BCV
+        async function guardarTasaBCV() {
+            const rate = parseFloat(document.getElementById('bcvRateInput').value);
+            if (!rate || rate <= 0) {
+                alert("Por favor proporcione una tasa de cambio válida.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/config/bcv', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify({ rate })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert("Tasa BCV actualizada exitosamente.");
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (e) {
+                alert("Error al conectar con el servidor.");
+            }
+        }
+
+        // Cargar Comprobantes
+        async function cargarComprobantes() {
+            try {
+                const response = await fetch('/api/comprobantes', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    logout();
+                    return;
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentComprobantes = result.data;
+                    renderComprobantes();
+                    calcularEstadisticas();
+                }
+            } catch (e) {
+                console.error("Error al obtener comprobantes:", e);
+            }
+        }
+
+        // Renderizar tabla
+        function renderComprobantes() {
+            const tbody = document.getElementById('comprobantesTableBody');
+            tbody.innerHTML = '';
+
+            if (currentComprobantes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No se han recibido comprobantes de pago.</td></tr>';
+                return;
+            }
+
+            currentComprobantes.forEach(c => {
+                let badgeClass = 'bg-warning text-dark';
+                if (c.estado === 'verificado') badgeClass = 'bg-success';
+                if (c.estado === 'rechazado') badgeClass = 'bg-danger';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${c.cliente_nombre}</div>
+                            <div class="text-muted small">${c.cliente_email} | ${c.telefono}</div>
+                        </td>
+                        <td>${c.zona_wifi}</td>
+                        <td><span class="badge bg-primary">${c.plan_solicitado}</span></td>
+                        <td>
+                            <div class="fw-bold">$${parseFloat(c.monto_usd).toFixed(2)}</div>
+                            <div class="text-muted font-monospace small">${parseFloat(c.monto_bs).toLocaleString('es-VE')} Bs</div>
+                        </td>
+                        <td>
+                            <div class="small">${c.banco_emisor} &rarr; ${c.banco_receptor}</div>
+                            <div class="font-monospace text-secondary small">Ref: ${c.referencia}</div>
+                        </td>
+                        <td>
+                            <a href="${c.comprobante_img_url}" target="_blank">
+                                <img src="${c.comprobante_img_url}" class="img-comprobante-thumb border">
+                            </a>
+                        </td>
+                        <td><span class="badge ${badgeClass} text-uppercase">${c.estado}</span></td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm fw-bold" onclick="abrirDetalles(${c.id})">
+                                <i class="fas fa-eye me-1"></i>Verificar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Calcular Estadísticas
+        function calcularEstadisticas() {
+            const pendientes = currentComprobantes.filter(c => c.estado === 'pendiente').length;
+            const verificados = currentComprobantes.filter(c => c.estado === 'verificado').length;
+            
+            document.getElementById('statPendientes').textContent = pendientes;
+            document.getElementById('statVerificados').textContent = verificados;
+        }
+
+        // Abrir Modal
+        function abrirDetalles(id) {
+            const c = currentComprobantes.find(item => item.id === id);
+            if (!c) return;
+
+            activeComprobanteId = id;
+            
+            document.getElementById('modalNombre').textContent = c.cliente_nombre;
+            document.getElementById('modalCedula').textContent = c.cliente_cedula;
+            document.getElementById('modalEmail').textContent = c.cliente_email;
+            document.getElementById('modalTelefono').textContent = c.telefono;
+            document.getElementById('modalZona').textContent = c.zona_wifi;
+            document.getElementById('modalPlan').textContent = c.plan_solicitado;
+            document.getElementById('modalMontoUsd').textContent = `$${parseFloat(c.monto_usd).toFixed(2)}`;
+            document.getElementById('modalMontoBs').textContent = `${parseFloat(c.monto_bs).toLocaleString('es-VE')} Bs`;
+            document.getElementById('modalTasa').textContent = parseFloat(c.tasa_bcv).toFixed(2);
+            document.getElementById('modalBancoEmisor').textContent = c.banco_emisor;
+            document.getElementById('modalBancoReceptor').textContent = c.banco_receptor;
+            document.getElementById('modalReferencia').textContent = c.referencia;
+            document.getElementById('modalFecha').textContent = new Date(c.fecha_pago).toLocaleDateString();
+            document.getElementById('modalObservaciones').textContent = c.observaciones || 'Ninguna';
+            
+            document.getElementById('modalImg').src = c.comprobante_img_url;
+            document.getElementById('modalImgLink').href = c.comprobante_img_url;
+
+            // Form inputs
+            document.getElementById('modalPin').value = c.pin_entregado || '';
+            document.getElementById('modalMensajeCliente').value = c.mensaje_cliente || '';
+            document.getElementById('modalObsInternas').value = c.observaciones || '';
+
+            const myModal = new bootstrap.Modal(document.getElementById('detalleModal'));
+            myModal.show();
+        }
+
+        // Procesar pago
+        async function procesarPago(estado) {
+            const pin = document.getElementById('modalPin').value.trim();
+            const mensaje = document.getElementById('modalMensajeCliente').value.trim();
+            const observaciones = document.getElementById('modalObsInternas').value.trim();
+
+            if (estado === 'verificado' && !pin) {
+                alert("Debes ingresar el PIN / Voucher de WiFi para poder aprobar el pago.");
+                return;
+            }
+
+            const payload = {
+                estado,
+                observaciones,
+                mensaje_cliente: mensaje,
+                pin_entregado: pin,
+                notificar_cliente: true // Notificar por Nodemailer siempre que se procese
+            };
+
+            try {
+                const response = await fetch(`/api/comprobantes/${activeComprobanteId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(`Pago ${estado === 'verificado' ? 'aprobado y PIN enviado' : 'rechazado'} correctamente.`);
+                    bootstrap.Modal.getInstance(document.getElementById('detalleModal')).hide();
+                    cargarComprobantes();
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (e) {
+                alert("Error al guardar la actualización.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            cargarTasaBCV();
+            cargarComprobantes();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Portal WiFi - Latina WiFi</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0072bc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Latina WiFi">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0072bc;
+            --secondary: #f37021;
+            --dark: #1e272e;
+            --light: #f5f6fa;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            padding-bottom: 85px;
+        }
+        .header-portal {
+            background: linear-gradient(135deg, var(--primary) 0%, #005a9c 100%);
+            color: white;
+            padding: 30px 0;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 15px rgba(0, 114, 188, 0.15);
+        }
+        .card-portal {
+            border: none;
+            border-radius: 18px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .voucher-card {
+            border-left: 5px solid var(--secondary);
+            background: #fff9f5;
+        }
+        .pin-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--secondary);
+            background: white;
+            border: 2px dashed #ffcca3;
+            border-radius: 12px;
+            padding: 10px 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            width: 100%;
+            cursor: pointer;
+            position: relative;
+        }
+        .pin-display:hover {
+            background: #fff2e6;
+        }
+        .pin-copy-tooltip {
+            position: absolute;
+            font-size: 0.7rem;
+            background: var(--dark);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            bottom: -25px;
+            display: none;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 30px;
+            text-transform: uppercase;
+        }
+        .status-pendiente { background-color: #fef9e7; color: #b7950b; }
+        .status-verificado { background-color: #e8f8f5; color: #117a65; }
+        .status-rechazado { background-color: #fdebd0; color: #ba4a00; }
+        
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--dark);
+        }
+        
+        /* Menú inferior para móviles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 68px;
+            background-color: white;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1030;
+            border-radius: 20px 20px 0 0;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.72rem;
+            transition: all 0.2s;
+            width: 25%;
+        }
+        .bottom-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+        .bottom-nav-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .bottom-nav-item.action-btn {
+            color: white;
+            background: linear-gradient(135deg, var(--secondary) 0%, #e05e10 100%);
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            margin-top: -22px;
+            box-shadow: 0 5px 10px rgba(243, 112, 33, 0.25);
+            border: 3px solid white;
+        }
+        .bottom-nav-item.action-btn i {
+            margin-bottom: 0;
+            font-size: 1.25rem;
+        }
+        .bottom-nav-item.action-btn span {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Portal -->
+    <header class="header-portal text-center">
+        <div class="container px-3 d-flex justify-content-between align-items-center">
+            <div class="text-start">
+                <p class="small mb-0 opacity-75">¡Hola, bienvenido!</p>
+                <h1 class="h4 fw-bold mb-0" id="customerName">Cargando...</h1>
+            </div>
+            <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt me-1"></i>Salir
+            </button>
+        </div>
+    </header>
+
+    <div class="container py-3">
+        <!-- BOTÓN ACCION RÁPIDA: REPORTAR PAGO -->
+        <div class="card-portal p-3 text-center bg-primary text-white">
+            <h6 class="fw-bold mb-2"><i class="fas fa-wifi me-2"></i>¿Deseas comprar o renovar navegación?</h6>
+            <a href="/soporte/renovar" class="btn btn-warning fw-bold text-dark px-4 py-2 w-100 rounded-3">
+                <i class="fas fa-wallet me-2"></i>Reportar Pago Rápido
+            </a>
+        </div>
+
+        <!-- 🔑 VOUCHERS / PINS ACTIVOS -->
+        <div class="card-portal p-3">
+            <h2 class="h6 fw-bold text-primary mb-3"><i class="fas fa-ticket-alt me-2"></i>Tus PINs de Navegación Activos</h2>
+            <div id="vouchersList" class="row">
+                <!-- Se cargan dinámicamente -->
+                <div class="col-12 text-center py-3">
+                    <div class="spinner-border text-secondary spinner-border-sm" role="status"></div>
+                    <p class="text-muted small mt-2 mb-0">Cargando códigos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💳 MÉTODOS DE PAGO GUARDADOS -->
+        <div class="card-portal p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="h6 fw-bold text-primary mb-0"><i class="fas fa-credit-card me-2"></i>Mis Datos de Pago Móvil</h2>
+                <span class="badge bg-light text-muted" style="font-size: 0.7rem;">Autoguardados</span>
+            </div>
+            <p class="text-muted small mb-3">Guarda tus datos de pago habituales para reportar tus compras en 5 segundos sin reescribir nada.</p>
+            
+            <form id="profileForm">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label for="banco_emisor" class="form-label mb-1">Banco Emisor (Tus fondos)</label>
+                        <input type="text" class="form-control form-control-sm" id="banco_emisor" placeholder="Ej: Banco de Venezuela, Mercantil, Banesco...">
+                    </div>
+                    <div class="col-6">
+                        <label for="telefono_pago_movil" class="form-label mb-1">Teléfono Pago Móvil</label>
+                        <input type="tel" class="form-control form-control-sm" id="telefono_pago_movil" placeholder="Ej: 04121234567">
+                    </div>
+                    <div class="col-6">
+                        <label for="cedula_pago_movil" class="form-label mb-1">Cédula Pago Móvil</label>
+                        <input type="text" class="form-control form-control-sm" id="cedula_pago_movil" placeholder="Ej: V-12345678">
+                    </div>
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 rounded-3" id="saveProfileBtn">
+                            <i class="fas fa-save me-1"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="profileAlert" class="mt-2 text-center small fw-bold" style="display:none;"></div>
+        </div>
+
+        <!-- 📑 HISTORIAL DE PAGOS -->
+        <div class="card-portal p-3">
+            <h2 class="h6 fw-bold text-primary mb-3"><i class="fas fa-history me-2"></i>Historial de Pagos Reportados</h2>
+            <div id="historyList" class="row">
+                <!-- Se carga dinámicamente -->
+                <div class="col-12 text-center py-3">
+                    <div class="spinner-border text-secondary spinner-border-sm" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú Inferior Móvil -->
+    <div class="bottom-nav">
+        <a href="/" class="bottom-nav-item">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="/soporte/renovar" class="bottom-nav-item action-btn">
+            <i class="fas fa-plus"></i>
+        </a>
+        <a href="/soporte" class="bottom-nav-item">
+            <i class="fas fa-headset"></i>
+            <span>Soporte</span>
+        </a>
+        <a href="/portal" class="bottom-nav-item active">
+            <i class="fas fa-user-circle"></i>
+            <span>Mi Cuenta</span>
+        </a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const token = localStorage.getItem('customer_token');
+        const customerDataRaw = localStorage.getItem('customer_data');
+
+        if (!token || !customerDataRaw) {
+            window.location.href = '/login';
+        }
+
+        const customer = JSON.parse(customerDataRaw);
+        document.getElementById('customerName').textContent = customer.nombre;
+
+        // Cargar campos de perfil guardados
+        document.getElementById('banco_emisor').value = customer.banco_emisor_defecto || '';
+        document.getElementById('telefono_pago_movil').value = customer.telefono_pago_movil_defecto || '';
+        document.getElementById('cedula_pago_movil').value = customer.cedula_pago_movil_defecto || '';
+
+        // Copiar PIN al portapapeles
+        function copiarPin(btn, pin) {
+            navigator.clipboard.writeText(pin).then(() => {
+                const tooltip = btn.querySelector('.pin-copy-tooltip');
+                tooltip.style.display = 'block';
+                setTimeout(() => {
+                    tooltip.style.display = 'none';
+                }, 1500);
+            }).catch(err => {
+                console.error("Error al copiar pin:", err);
+            });
+        }
+
+        // Cerrar sesión
+        function cerrarSesion() {
+            localStorage.removeItem('customer_token');
+            localStorage.removeItem('customer_data');
+            window.location.href = '/login';
+        }
+
+        // Cargar PINs y Transacciones
+        async function cargarDatosPortal() {
+            try {
+                const response = await fetch('/api/customers/comprobantes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    const data = result.data;
+                    renderVouchers(data);
+                    renderHistorial(data);
+                }
+            } catch (err) {
+                console.error("Error al cargar comprobantes:", err);
+            }
+        }
+
+        function renderVouchers(comprobantes) {
+            const list = document.getElementById('vouchersList');
+            const verified = comprobantes.filter(c => c.estado === 'verificado' && c.pin_entregado);
+            
+            if (verified.length === 0) {
+                list.innerHTML = `
+                    <div class="col-12 text-center py-3 text-muted small">
+                        <i class="fas fa-key fa-2x text-muted opacity-50 mb-2 d-block"></i>
+                        Aún no tienes PINs activos. Reporta tu pago móvil y cuando sea aprobado aparecerá tu PIN aquí y te llegará por email.
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = verified.map(c => `
+                <div class="col-12 mb-2">
+                    <div class="card card-portal voucher-card p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-primary">${c.plan_solicitado}</span>
+                            <span class="badge bg-success font-monospace" style="font-size: 0.65rem;">Habilitado</span>
+                        </div>
+                        <div class="pin-display" onclick="copiarPin(this, '${c.pin_entregado}')">
+                            ${c.pin_entregado}
+                            <i class="fas fa-copy ms-3 fs-5 opacity-75"></i>
+                            <span class="pin-copy-tooltip">¡Copiado!</span>
+                        </div>
+                        <p class="small text-muted mb-0 font-monospace text-end" style="font-size: 0.7rem;">
+                            Entregado: ${new Date(c.updatedAt).toLocaleDateString()}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHistorial(comprobantes) {
+            const list = document.getElementById('historyList');
+            if (comprobantes.length === 0) {
+                list.innerHTML = `
+                    <div class="col-12 text-center py-3 text-muted small">
+                        No has reportado ningún pago móvil aún.
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = comprobantes.map(c => `
+                <div class="col-12 mb-2 border-bottom pb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="small">${c.plan_solicitado}</strong>
+                        <span class="status-badge status-${c.estado}">${c.estado}</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted font-monospace" style="font-size: 0.75rem;">
+                        <span>Ref: ${c.referencia} | ${c.banco_emisor}</span>
+                        <span>$${parseFloat(c.monto_usd).toFixed(2)} (${parseFloat(c.monto_bs).toLocaleString('es-VE')} Bs)</span>
+                    </div>
+                    <div class="text-muted small mt-1 font-monospace" style="font-size: 0.7rem;">
+                        Fecha Reporte: ${new Date(c.createdAt).toLocaleDateString()}
+                        ${c.mensaje_cliente ? `<div class="bg-light p-1 mt-1 text-dark"><strong>Nota Admin:</strong> ${c.mensaje_cliente}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Guardar Datos del Perfil
+        const profileForm = document.getElementById('profileForm');
+        const profileAlert = document.getElementById('profileAlert');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+
+        // Forzar cédula a mayúsculas
+        document.getElementById('cedula_pago_movil').addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            profileAlert.style.display = 'none';
+
+            const banco_emisor_defecto = document.getElementById('banco_emisor').value.trim();
+            const telefono_pago_movil_defecto = document.getElementById('telefono_pago_movil').value.trim();
+            const cedula_pago_movil_defecto = document.getElementById('cedula_pago_movil').value.trim();
+
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Guardando...';
+
+            try {
+                const response = await fetch('/api/customers/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        banco_emisor_defecto,
+                        telefono_pago_movil_defecto,
+                        cedula_pago_movil_defecto
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    profileAlert.className = 'mt-2 text-center small fw-bold text-success';
+                    profileAlert.textContent = '¡Datos guardados con éxito!';
+                    profileAlert.style.display = 'block';
+
+                    // Actualizar localStorage
+                    localStorage.setItem('customer_data', JSON.stringify(result.customer));
+                } else {
+                    profileAlert.className = 'mt-2 text-center small fw-bold text-danger';
+                    profileAlert.textContent = result.error || 'Error al guardar.';
+                    profileAlert.style.display = 'block';
+                }
+            } catch (err) {
+                profileAlert.className = 'mt-2 text-center small fw-bold text-danger';
+                profileAlert.textContent = 'Error de conexión.';
+                profileAlert.style.display = 'block';
+            } finally {
+                saveProfileBtn.disabled = false;
+                saveProfileBtn.innerHTML = '<i class="fas fa-save me-1"></i>Guardar Cambios';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', cargarDatosPortal);
+    </script>
+</body>
+</html>

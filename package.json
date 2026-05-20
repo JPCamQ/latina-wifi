@@ -1,0 +1,29 @@
+{
+  "name": "latina-tv-app",
+  "version": "1.0.0",
+  "description": "Sistema web para Latina TV Dos CA",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.21.2",
+    "html2canvas": "^1.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.3",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.6.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.10",
+    "sequelize": "^6.32.1",
+    "sqlite3": "^6.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
