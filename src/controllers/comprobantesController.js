@@ -79,7 +79,7 @@ const crearComprobante = async (req, res) => {
     console.error('❌ Error al crear comprobante:', error);
     res.status(500).json({
       success: false,
-      error: 'Error interno del servidor al procesar el pago. Intente nuevamente.'
+      error: 'Error interno del servidor: ' + error.message
     });
   }
 };
