@@ -1,5 +1,6 @@
 const Comprobante = require('../models/Comprobante');
 const Setting = require('../models/Setting');
+const Customer = require('../models/Customer');
 const { enviarEmailComprobanteVerificado } = require('../services/emailService');
 const jwt = require('jsonwebtoken');
 
@@ -36,7 +37,13 @@ const crearComprobante = async (req, res) => {
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'latina_wifi_secret_key_123');
         if (decoded && decoded.role === 'customer') {
-          customerId = decoded.id;
+          // Verificar si el cliente realmente existe en la base de datos para evitar errores de clave foránea
+          const clienteExiste = await Customer.findByPk(decoded.id);
+          if (clienteExiste) {
+            customerId = decoded.id;
+          } else {
+            console.log(`⚠️ Cliente con ID ${decoded.id} no existe en la base de datos (posible reseteo de BD).`);
+          }
         }
       } catch (err) {
         console.log('⚠️ Token opcional de cliente inválido al enviar comprobante:', err.message);
