@@ -21,6 +21,20 @@ require('./config/initAdmin');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Crear directorios de uploads si no existen (necesario en producción/Render ya que Git no registra carpetas vacías)
+const fs = require('fs');
+const dirComprobantes = path.join(__dirname, '../public/uploads/comprobantes');
+const dirNoticias = path.join(__dirname, '../public/uploads/noticias');
+
+if (!fs.existsSync(dirComprobantes)) {
+  fs.mkdirSync(dirComprobantes, { recursive: true });
+  console.log('📁 Directorio de comprobantes inicializado:', dirComprobantes);
+}
+if (!fs.existsSync(dirNoticias)) {
+  fs.mkdirSync(dirNoticias, { recursive: true });
+  console.log('📁 Directorio de noticias inicializado:', dirNoticias);
+}
+
 // ======================
 // MIDDLEWARES
 // ======================
